@@ -133,7 +133,7 @@ export default function NotificationScreen() {
               onPress={() => router.push(`/admin/notification/${user.id}`)}
             >
               <View className="flex-row border-b border-gray-300 p-3 items-center">
-                <View className="w-[40%] px-1">
+                <View className="w-[35%] px-1">
                   <Text className="font-bold text-base">{user.name}</Text>
                   <Text className="text-gray-500 text-sm">{user.email}</Text>
                 </View>

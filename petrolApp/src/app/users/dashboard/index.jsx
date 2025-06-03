@@ -5,24 +5,59 @@ import {
   ScrollView,
   BackHandler,
   Alert,
-  useWindowDimensions,
 } from "react-native";
 import { useCallback, useEffect, useState } from "react";
 import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import OilGasNews from "@/src/components/OilGasNews";
+// import OilGasNews from "@/src/components/OilGasNews";
 import { useFocusEffect, useRouter, useSegments } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getStations } from "../../../components/utils/station";
+import { getPetrolPrice } from "../../../components/utils/station";
 
 const Menu = () => {
   const router = useRouter();
 
   const segments = useSegments();
-  const { width } = useWindowDimensions();
-  const isTablet = width >= 768;
   const [highestPrice, setHighestPrice] = useState(0);
   const [lowestPrice, setLowestPrice] = useState(0);
+  const quickActions = [
+    {
+      label: "Nearby Station",
+      icon: "gas-pump",
+      onPress: () => router.push("/users/nearbyStation"),
+    },
+    {
+      label: "Market Place",
+      icon: "store",
+      onPress: () => router.push("/users/marketPlace"),
+    },
+    {
+      label: "Latest News",
+      icon: "newspaper",
+      onPress: () => router.push("/users/news"),
+    },
+    {
+      label: "Your Orders",
+      icon: "shopping-basket",
+      onPress: () => router.push("/users-screen/user-orders"),
+    },
+    {
+      label: "Testimonial",
+      icon: "comments",
+      onPress: () => router.push("/users-screen/testimonial"),
+    },
+
+    {
+      label: "Advert",
+      icon: "bullhorn",
+      onPress: () => router.push("/users-screen/advert"),
+    },
+    {
+      label: "Vendor",
+      icon: "user-tag",
+      onPress: () => router.push("/users-screen/vendor"),
+    },
+  ];
 
   useEffect(() => {
     const backAction = () => {
@@ -83,24 +118,29 @@ const Menu = () => {
 
   useFocusEffect(
     useCallback(() => {
-      const fetchStations = async () => {
+      const fetchPrices = async () => {
         try {
-          const data = await getStations();
-          const pmsPrices = data.map((station) => station.pms).filter(Boolean);
-          setHighestPrice(Math.max(...pmsPrices));
-          setLowestPrice(Math.min(...pmsPrices));
+          const data = await getPetrolPrice();
+          if (data.length > 0) {
+            const sorted = [...data].sort((a, b) => a.price - b.price);
+            // Lowest and highest prices
+            const lowest = sorted[0];
+            const highest = sorted[sorted.length - 1];
+
+            setLowestPrice(lowest); // e.g., { price: 850, stationName: "Texaco" }
+            setHighestPrice(highest); // e.g., { price: 1000, stationName: "Eterna" }
+          }
         } catch (error) {
-          console.log(error);
+          console.log("Error fetching prices:", error);
         }
       };
 
-      fetchStations();
+      fetchPrices();
     }, [])
   );
 
   return (
     <ScrollView className="flex-1 bg-gray-100 p-4">
-      {/* <ImageSlider /> */}
       <LinearGradient
         colors={["#00C6FF", "#0072FF"]}
         className="rounded-xl p-4 mb-4 mt-5"
@@ -117,16 +157,16 @@ const Menu = () => {
         </View>
 
         <View className="flex flex-row justify-between items-center mb-2">
-          <Text className="text-gray-500 text-sm">High Price</Text>
+          <Text className="text-gray-500 text-lg">High Price</Text>
           <Text className="text-xl font-bold text-gray-800">
-            ₦{highestPrice.toFixed(2)}
+            ₦{highestPrice.price} @ {highestPrice.stationName}
           </Text>
         </View>
 
         <View className="flex flex-row justify-between items-center">
-          <Text className="text-gray-500 text-sm">Best Price</Text>
+          <Text className="text-gray-500 text-lg">Best Price</Text>
           <Text className="text-xl font-bold text-green-600">
-            ₦{lowestPrice.toFixed(2)}
+            ₦{lowestPrice.price} @ {lowestPrice.stationName}
           </Text>
         </View>
       </View>
@@ -136,55 +176,26 @@ const Menu = () => {
         <Text className="text-xl font-bold text-gray-800 mb-4">
           Quick Actions
         </Text>
-        <View className="flex-row justify-between flex-wrap">
-          <TouchableOpacity
-            onPress={() => router.push("/users/nearbyStation")}
-            className="bg-white p-4 rounded-lg shadow-md flex-1 items-center mx-1 mb-4"
-          >
-            <FontAwesome5 name="gas-pump" size={24} color="#0072FF" />
-            <Text className="text-gray-600 text-center">Nearby Station</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => router.push("/users/marketPlace")}
-            className="bg-white p-4 rounded-lg shadow-md flex-1 items-center mx-1 mb-4"
-          >
-            <FontAwesome5 name="store" size={24} color="#0072FF" />
-            <Text className="text-gray-600 text-center">Market Place</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => router.push("/users/news")}
-            className="bg-white p-4 rounded-lg shadow-md flex-1 items-center mx-1 mb-4"
-          >
-            <FontAwesome5 name="newspaper" size={24} color="#0072FF" />
-            <Text className="text-gray-600 text-center">Latest News</Text>
-          </TouchableOpacity>
-          <View
-            className={`${
-              isTablet ? "flex-1 mx-1 mb-4" : "w-full mb-4"
-            } flex-row justify-between`}
-          >
-            <TouchableOpacity
-              onPress={() => router.push("/users-screen/user-orders")}
-              className="bg-white p-4 rounded-lg shadow-md flex-1 items-center mx-1"
-            >
-              <FontAwesome5 name="shopping-basket" size={24} color="#0072FF" />
-              <Text className="text-gray-600 text-center">Your Orders</Text>
-            </TouchableOpacity>
 
+        <View className="flex-row flex-wrap -mx-2">
+          {quickActions.map((item, index) => (
             <TouchableOpacity
-              onPress={() => router.push("/users-screen/testimonial")}
-              className="bg-white p-4 rounded-lg shadow-md flex-1 items-center mx-1"
+              key={index}
+              onPress={item.onPress}
+              className="w-1/3 px-2 mb-4"
             >
-              <FontAwesome5 name="comments" size={24} color="#0072FF" />
-              <Text className="text-gray-600 text-center">Testimonial</Text>
+              <View className="bg-white p-4 rounded-lg shadow-md items-center">
+                <FontAwesome5 name={item.icon} size={24} color="#0072FF" />
+                <Text className="text-gray-600 text-center">{item.label}</Text>
+              </View>
             </TouchableOpacity>
-          </View>
+          ))}
         </View>
       </View>
-      {/* Oil & Gas News Section */}
-      <View className="my-1 ">
+
+      {/* <View className="my-1 ">
         <OilGasNews />
-      </View>
+      </View> */}
     </ScrollView>
   );
 };

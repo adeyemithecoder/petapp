@@ -20,7 +20,7 @@ expo-env.d.ts
 # Metro
 .metro-health-check*
 
-# google-services.json
+google-services.json
 
 # debug
 npm-debug.*

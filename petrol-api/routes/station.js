@@ -190,81 +190,91 @@ stationRouter.get(
   })
 );
 
-// POST /api/petrolprice
-
+//create price
 stationRouter.post(
   "/price",
   expressAsyncHandler(async (req, res) => {
-    const { stationName, price } = req.body;
+    const { stationName, prices } = req.body;
+    // prices: [{ type: "Regular", price: 1.2 }, { type: "Premium", price: 1.35 }]
 
-    if (!stationName || price == null) {
-      return res
-        .status(400)
-        .json({ message: "stationName and price are required" });
-    }
-
-    // Check if a price already exists for the station
-    const existingPrice = await prisma.petrolPrice.findFirst({
-      where: {
-        stationName: {
-          equals: stationName,
-          mode: "insensitive", // optional: ignores case
-        },
-      },
-    });
-
-    if (existingPrice) {
+    if (!stationName || !Array.isArray(prices) || prices.length === 0) {
       return res.status(400).json({
-        message: `Price for station "${stationName}" already exists.`,
+        message: "stationName and at least one petrol type price are required",
       });
     }
 
-    const newPrice = await prisma.petrolPrice.create({
-      data: {
-        stationName,
-        price: Number(price),
+    const existingStation = await prisma.petrolPrice.findFirst({
+      where: {
+        stationName: { equals: stationName, mode: "insensitive" },
       },
     });
 
-    res.status(201).json(newPrice);
+    if (existingStation) {
+      return res.status(400).json({
+        message: `Station "${stationName}" already exists.`,
+      });
+    }
+
+    const newEntry = await prisma.petrolPrice.create({
+      data: {
+        stationName,
+        priceAndType: {
+          create: prices.map((p) => ({
+            type: p.type,
+            price: Number(p.price),
+          })),
+        },
+      },
+      include: { priceAndType: true },
+    });
+
+    res.status(201).json(newEntry);
   })
 );
 
-// PUT /api/petrolprice/:id
+//Update price
 stationRouter.put(
   "/price/:id",
   expressAsyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { stationName, price } = req.body;
+    const { stationName, prices } = req.body;
+    // prices: [{ id: "abc123", type: "Regular", price: 1.3 }, { type: "Super", price: 1.6 }]
 
     const existing = await prisma.petrolPrice.findUnique({
       where: { id },
+      include: { priceAndType: true },
     });
 
     if (!existing) {
-      return res.status(404).json({ message: "PetrolPrice entry not found" });
+      return res.status(404).json({ message: "Station not found" });
     }
 
     const updated = await prisma.petrolPrice.update({
       where: { id },
       data: {
         stationName,
-        price: Number(price),
+        priceAndType: {
+          deleteMany: {}, // remove all existing petrol types
+          create: prices.map((p) => ({
+            type: p.type,
+            price: Number(p.price),
+          })),
+        },
       },
+      include: { priceAndType: true },
     });
 
     res.json(updated);
   })
 );
 
-// GET /api/petrolprice
+//get price
 stationRouter.get(
   "/price",
   expressAsyncHandler(async (req, res) => {
     const prices = await prisma.petrolPrice.findMany({
-      orderBy: {
-        stationName: "asc",
-      },
+      orderBy: { stationName: "asc" },
+      include: { priceAndType: true },
     });
 
     res.json(prices);

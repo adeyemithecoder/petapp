@@ -54,24 +54,24 @@ const StationOwner = ({ user, navigation }) => {
             <Text className="text-3xl font-extrabold text-gray-800 text-center">
               Welcome to Splantom PetrolApp!
             </Text>
-            <Text className="text-lg text-gray-600 mt-3 text-center">
+            <Text className="text-lg text-gray-600 mt-3">
               Fuel smarter, grow faster — your station's success starts here.
             </Text>
           </View>
 
           {/* Body Text */}
           <View className="mb-6">
-            <Text className="text-lg text-gray-700 text-center mb-4">
+            <Text className="text-lg text-gray-700 mb-4">
               Splantom PetrolApp helps station owners like you streamline fuel
               ordering, reach more customers, and showcase all the services and
               products your station offers.
             </Text>
-            <Text className="text-lg text-gray-700 text-center mb-4">
+            <Text className="text-lg text-gray-700 mb-4">
               Whether you offer car wash, lubricants, tire services, or
               mini-mart items — we make sure people know about it, helping you
               increase visibility and drive more sales.
             </Text>
-            <Text className="text-lg text-gray-700 text-center">
+            <Text className="text-lg text-gray-700">
               Before you continue, please take a moment to read our{" "}
               <Text
                 className="text-blue-600 underline"

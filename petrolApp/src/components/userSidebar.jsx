@@ -220,7 +220,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, navigation }) => {
           />
           <SidebarItem
             icon={<MaterialIcons name="privacy-tip" size={20} color="black" />}
-            text="Privacy Policy"
+            text="Privacy Policy and Terms of Use"
             onPress={() => handleNavigation("/users-screen/privacy")}
           />
           <SidebarItem

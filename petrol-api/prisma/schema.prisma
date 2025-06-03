@@ -40,9 +40,17 @@ model User {
 }
 
 model PetrolPrice {
-  id          String @id @default(auto()) @map("_id") @db.ObjectId
-  stationName String
-  price       Float
+  id           String         @id @default(auto()) @map("_id") @db.ObjectId
+  stationName  String         @unique
+  priceAndType PriceAndType[]
+}
+
+model PriceAndType {
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
+  price         Float
+  type          String
+  PetrolPrice   PetrolPrice? @relation(fields: [petrolPriceId], references: [id], onDelete: Cascade)
+  petrolPriceId String?      @db.ObjectId
 }
 
 model Station {

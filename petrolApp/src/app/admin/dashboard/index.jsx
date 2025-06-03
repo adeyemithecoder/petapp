@@ -147,7 +147,7 @@ const AdminDashboard = () => {
           Quick Actions
         </Text>
 
-        <View className="flex-row flex-wrap justify-between gap-y-4">
+        <View className="flex-row flex-wrap gap-x-4 gap-y-4">
           <TouchableOpacity
             className="w-[30%] items-center"
             onPress={() => router.push("/admin/users")}
@@ -193,7 +193,7 @@ const AdminDashboard = () => {
             onPress={() => router.push("/admin-screen/price")}
           >
             <View className="bg-[#e6ffe6] p-2 rounded-full mb-1">
-              <FontAwesome5 name="shopping-basket" size={25} color="#00cc44" />
+              <FontAwesome5 name="money-bill-wave" size={25} color="#00cc44" />
             </View>
             <Text className="text-gray-800 text-center">Price</Text>
           </TouchableOpacity>
