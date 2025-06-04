@@ -7,7 +7,7 @@ import {
   ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { getVendorByUser } from "../../components/utils/vendor"; // You should create this helper function
+import { getVendorByUser } from "../../components/utils/station";
 
 const VendorHome = () => {
   const [vendor, setVendor] = useState(null);
@@ -16,7 +16,7 @@ const VendorHome = () => {
 
   const fetchVendor = async () => {
     try {
-      const data = await getVendorByUser(); // Similar to getStationByOwner
+      const data = await getVendorByUser();
       setVendor(data);
     } catch (error) {
       console.log("No vendor found or error fetching:", error.message);

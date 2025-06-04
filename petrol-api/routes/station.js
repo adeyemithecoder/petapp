@@ -285,12 +285,14 @@ stationRouter.get(
 stationRouter.post(
   "/vendor",
   expressAsyncHandler(async (req, res) => {
-    const { fullName, phone, location, pms, userId } = req.body;
+    const { fullName, phone, location, pms, userId, image, imageId } = req.body;
 
     try {
       const newVendor = await prisma.vendor.create({
         data: {
           fullName,
+          image,
+          imageId,
           phone,
           location,
           pms: Number(pms),
@@ -312,25 +314,22 @@ stationRouter.put(
   "/vendor/:id",
   expressAsyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { fullName, phone, location, pms } = req.body;
+    const updateData = req.body;
 
     const existingVendor = await prisma.vendor.findUnique({
       where: { id },
     });
-
     if (!existingVendor) {
       return res.status(404).json({ message: "Vendor not found" });
     }
-
     try {
+      // Optional: Convert numeric fields (e.g. "pms") from string to number
+      if (updateData.pms) {
+        updateData.pms = Number(updateData.pms);
+      }
       const updatedVendor = await prisma.vendor.update({
         where: { id },
-        data: {
-          fullName,
-          phone,
-          location,
-          pms: Number(pms),
-        },
+        data: updateData,
       });
 
       res.json(updatedVendor);
@@ -406,7 +405,7 @@ stationRouter.get(
       const vendor = await prisma.vendor.findUnique({
         where: { id },
         include: {
-          user: true, // Optional: include user info
+          user: true,
         },
       });
 

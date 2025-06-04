@@ -90,3 +90,15 @@ export const getPetrolPrice = async () => {
     throw error;
   }
 };
+
+export const getVendorByUser = async () => {
+  try {
+    const userData = await AsyncStorage.getItem("userDetails");
+    const { id } = JSON.parse(userData);
+    const { data } = await axios.get(`${apiUrl}/station/vendor-by-owner/${id}`);
+    return data;
+  } catch (error) {
+    console.error("Error fetch station:", error.message);
+    throw error;
+  }
+};
