@@ -281,6 +281,137 @@ stationRouter.get(
   })
 );
 
+// Create vendor
+stationRouter.post(
+  "/vendor",
+  expressAsyncHandler(async (req, res) => {
+    const { fullName, phone, location, pms, userId } = req.body;
+
+    try {
+      const newVendor = await prisma.vendor.create({
+        data: {
+          fullName,
+          phone,
+          location,
+          pms: Number(pms),
+          user: { connect: { id: userId } },
+        },
+      });
+
+      res.status(201).json(newVendor);
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Failed to create vendor", error: error.message });
+    }
+  })
+);
+
+// Update vendor
+stationRouter.put(
+  "/vendor/:id",
+  expressAsyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { fullName, phone, location, pms } = req.body;
+
+    const existingVendor = await prisma.vendor.findUnique({
+      where: { id },
+    });
+
+    if (!existingVendor) {
+      return res.status(404).json({ message: "Vendor not found" });
+    }
+
+    try {
+      const updatedVendor = await prisma.vendor.update({
+        where: { id },
+        data: {
+          fullName,
+          phone,
+          location,
+          pms: Number(pms),
+        },
+      });
+
+      res.json(updatedVendor);
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Failed to update vendor", error: error.message });
+    }
+  })
+);
+
+//Get All Vendor
+stationRouter.get(
+  "/vendor",
+  expressAsyncHandler(async (req, res) => {
+    try {
+      const vendors = await prisma.vendor.findMany({
+        orderBy: { createdAt: "desc" }, // Optional: sort by latest
+      });
+
+      res.json(vendors);
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Failed to fetch vendors", error: error.message });
+    }
+  })
+);
+
+// Delete Vendor
+stationRouter.delete(
+  "/vendor/:id",
+  expressAsyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const existingVendor = await prisma.vendor.findUnique({
+      where: { id },
+    });
+
+    if (!existingVendor) {
+      return res.status(404).json({ message: "Vendor not found" });
+    }
+
+    try {
+      await prisma.vendor.delete({ where: { id } });
+      res.json({ message: "Vendor deleted successfully" });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Failed to delete vendor", error: error.message });
+    }
+  })
+);
+
+// Get vendor By Id
+stationRouter.get(
+  "/vendor/:id",
+  expressAsyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    try {
+      const vendor = await prisma.vendor.findUnique({
+        where: { id },
+        include: {
+          user: true, // Optional: include user info
+        },
+      });
+
+      if (!vendor) {
+        return res.status(404).json({ message: "Vendor not found" });
+      }
+
+      res.json(vendor);
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Failed to fetch vendor", error: error.message });
+    }
+  })
+);
+
 // Get Station By Id
 stationRouter.get(
   "/:id",

@@ -8,20 +8,23 @@ import {
   Alert,
 } from "react-native";
 import ReusableInput from "../../components/ReuseAbleInput";
+import CheckboxDropdown from "../../components/CheckboxDropdown"; // import your dropdown
 import {
   createPetrolPrice,
   updatePetrolPrice,
   getPetrolPrice,
 } from "../../components/utils/station";
 
+const FUEL_OPTIONS = ["Regular", "Premium", "Super"];
+
 const CreateAndUpdatePrice = () => {
   const [stationName, setStationName] = useState("");
-  const [price, setPrice] = useState("");
+  const [selectedTypes, setSelectedTypes] = useState([]);
+  const [fuelPrices, setFuelPrices] = useState({});
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [prices, setPrices] = useState([]);
 
-  // Fetch existing petrol prices
   const fetchPrices = async () => {
     setLoading(true);
     try {
@@ -39,8 +42,26 @@ const CreateAndUpdatePrice = () => {
   }, []);
 
   const handleSubmit = async () => {
-    if (!stationName || !price) {
-      Alert.alert("Validation Error", "Please fill in all fields.");
+    if (!stationName || selectedTypes.length === 0) {
+      Alert.alert(
+        "Validation Error",
+        "Please select fuel types and enter prices."
+      );
+      return;
+    }
+
+    const pricesArray = selectedTypes
+      .filter((type) => fuelPrices[type])
+      .map((type) => ({
+        type,
+        price: parseFloat(fuelPrices[type]),
+      }));
+
+    if (pricesArray.length === 0) {
+      Alert.alert(
+        "Validation Error",
+        "Enter price for at least one fuel type."
+      );
       return;
     }
 
@@ -49,20 +70,20 @@ const CreateAndUpdatePrice = () => {
       if (editingId) {
         await updatePetrolPrice(editingId, {
           stationName,
-          price: parseFloat(price),
+          prices: pricesArray,
         });
-        Alert.alert("Success", "Petrol price updated.");
+        Alert.alert("Success", "Petrol prices updated.");
       } else {
         await createPetrolPrice({
           stationName,
-          price: parseFloat(price),
+          prices: pricesArray,
         });
-        Alert.alert("Success", "Petrol price created.");
+        Alert.alert("Success", "Petrol prices created.");
       }
 
-      // Reset form and refresh list
       setStationName("");
-      setPrice("");
+      setSelectedTypes([]);
+      setFuelPrices({});
       setEditingId(null);
       fetchPrices();
     } catch (err) {
@@ -75,27 +96,33 @@ const CreateAndUpdatePrice = () => {
 
   const handleEdit = (item) => {
     setStationName(item.stationName);
-    setPrice(item.price.toString());
+    const types = item.priceAndType.map((pt) => pt.type);
+    const priceMap = {};
+    item.priceAndType.forEach((pt) => {
+      priceMap[pt.type] = pt.price.toString();
+    });
+    setSelectedTypes(types);
+    setFuelPrices(priceMap);
     setEditingId(item.id);
   };
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
       onPress={() => handleEdit(item)}
-      className="bg-white px-4 py-5 rounded-2xl mb-3 border border-gray-200 shadow-sm"
+      className="bg-white px-5 py-6 rounded-2xl mb-4 border border-gray-200 shadow-sm"
     >
-      <View className="flex-row justify-between items-center">
-        <View>
-          <Text className="text-lg font-semibold text-gray-900">
-            {item.stationName}
-          </Text>
-          <Text className="text-sm text-gray-500">Tap to edit</Text>
-        </View>
-        <View className="bg-green-100 px-3 py-1 rounded-full">
-          <Text className="text-green-700 font-semibold text-base">
-            ₦{item.price}
-          </Text>
-        </View>
+      <View className="flex-col items-start">
+        <Text className="text-lg font-semibold text-gray-900 mb-1">
+          {item.stationName}
+        </Text>
+
+        <Text className="text-sm text-gray-700 mb-2">
+          {item.priceAndType.map((pt) => `${pt.type}: ₦${pt.price}`).join(", ")}
+        </Text>
+
+        <Text className="text-sm text-blue-600 font-medium self-end">
+          Tap to edit
+        </Text>
       </View>
     </TouchableOpacity>
   );
@@ -113,13 +140,35 @@ const CreateAndUpdatePrice = () => {
         onChangeText={setStationName}
       />
 
-      <ReusableInput
-        icon="money"
-        label="Price (₦)"
-        value={price}
-        onChangeText={(text) => setPrice(text.replace(/[^0-9.]/g, ""))}
-        keyboardType="numeric"
+      <CheckboxDropdown
+        label="Select Fuel Types"
+        options={FUEL_OPTIONS}
+        value={selectedTypes}
+        onChange={(types) => {
+          setSelectedTypes(types);
+          const updated = { ...fuelPrices };
+          types.forEach((type) => {
+            if (!updated[type]) updated[type] = "";
+          });
+          setFuelPrices(updated);
+        }}
       />
+
+      {selectedTypes.map((type) => (
+        <ReusableInput
+          key={type}
+          icon="money"
+          label={`${type} Price`}
+          value={fuelPrices[type]}
+          onChangeText={(text) =>
+            setFuelPrices({
+              ...fuelPrices,
+              [type]: text.replace(/[^0-9.]/g, ""),
+            })
+          }
+          keyboardType="numeric"
+        />
+      ))}
 
       <TouchableOpacity
         onPress={handleSubmit}
@@ -135,9 +184,9 @@ const CreateAndUpdatePrice = () => {
       ) : (
         <FlatList
           data={prices}
-          showsVerticalScrollIndicator={false}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
         />
       )}
     </View>

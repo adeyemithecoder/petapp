@@ -115,20 +115,28 @@ const Menu = () => {
     };
     checkLoginStatus();
   }, []);
-
   useFocusEffect(
     useCallback(() => {
       const fetchPrices = async () => {
         try {
           const data = await getPetrolPrice();
-          if (data.length > 0) {
-            const sorted = [...data].sort((a, b) => a.price - b.price);
-            // Lowest and highest prices
-            const lowest = sorted[0];
-            const highest = sorted[sorted.length - 1];
 
-            setLowestPrice(lowest); // e.g., { price: 850, stationName: "Texaco" }
-            setHighestPrice(highest); // e.g., { price: 1000, stationName: "Eterna" }
+          const allPrices = [];
+
+          data.forEach((station) => {
+            station.priceAndType.forEach((pt) => {
+              allPrices.push({
+                stationName: station.stationName,
+                type: pt.type,
+                price: pt.price,
+              });
+            });
+          });
+
+          if (allPrices.length > 0) {
+            const sorted = allPrices.sort((a, b) => a.price - b.price);
+            setLowestPrice(sorted[0]);
+            setHighestPrice(sorted[sorted.length - 1]);
           }
         } catch (error) {
           console.log("Error fetching prices:", error);

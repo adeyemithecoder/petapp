@@ -145,10 +145,18 @@ const ImageUploadComponent = forwardRef((props, ref) => {
       {loading ? (
         <ActivityIndicator size="large" color="orange" />
       ) : imagePreview ? (
-        <Image
-          source={{ uri: imagePreview }}
-          className="w-[220px] h-[220px] rounded-full my-5"
-        />
+        <View className="relative my-5">
+          <Image
+            source={{ uri: imagePreview }}
+            className="w-[220px] h-[220px] rounded-full"
+          />
+          <TouchableOpacity
+            onPress={pickImage}
+            className="absolute bottom-2 right-2 bg-white p-2 rounded-full shadow-md"
+          >
+            <FontAwesome5 name="edit" size={20} color="orange" />
+          </TouchableOpacity>
+        </View>
       ) : (
         <TouchableOpacity onPress={pickImage} className="items-center">
           <FontAwesome5 name="camera" size={70} color="orange" />

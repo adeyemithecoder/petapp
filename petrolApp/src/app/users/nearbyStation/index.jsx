@@ -34,27 +34,17 @@ const NearbyStation = () => {
   const mergeStationsWithPrices = (stationsList, pricesList) => {
     const priceMap = new Map();
     pricesList.forEach((priceItem) => {
-      priceMap.set(priceItem.stationName.trim().toLowerCase(), priceItem.price);
+      const key = priceItem.stationName.trim().toLowerCase();
+      priceMap.set(key, priceItem.priceAndType); // updated to match backend structure
     });
+
     return stationsList.map((station) => {
       const key = station.name.trim().toLowerCase();
-      return { ...station, price: priceMap.get(key) || null };
+      return {
+        ...station,
+        priceAndType: priceMap.get(key) || [], // store array of types & prices
+      };
     });
-  };
-
-  // Fetch petrol prices
-  const fetchPrices = async () => {
-    setLoading(true);
-    try {
-      const data = await getPetrolPrice();
-      if (data.length > 0) {
-        setStations(mergeStationsWithPrices(stations, data));
-      }
-    } catch (err) {
-      console.error("Failed to fetch prices:", err);
-    } finally {
-      setLoading(false);
-    }
   };
 
   // Get address from coordinates using Mapbox geocoding
@@ -100,6 +90,7 @@ const NearbyStation = () => {
 
     try {
       const priceData = await getPetrolPrice();
+      console.log("priceData=", priceData);
       const response = await axios.get(url);
       let stationList = await Promise.all(
         response.data.elements.map(async (el) => {

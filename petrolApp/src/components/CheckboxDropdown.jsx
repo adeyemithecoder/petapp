@@ -43,13 +43,16 @@ const CheckboxDropdown = ({ label, options = [], value = [], onChange }) => {
 
         <View className="absolute top-[30%] left-[10%] w-[80%] bg-white rounded-xl p-5">
           {options.map((option) => (
-            <View key={option} className="flex-row items-center mb-2.5">
+            <TouchableOpacity
+              key={option}
+              className="flex-row items-center mb-2.5"
+              onPress={() => toggleCheckbox(option)}
+            >
               <Checkbox
                 status={value.includes(option) ? "checked" : "unchecked"}
-                onPress={() => toggleCheckbox(option)}
               />
               <Text className="ml-2">{option}</Text>
-            </View>
+            </TouchableOpacity>
           ))}
 
           <TouchableOpacity

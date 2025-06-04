@@ -1,18 +1,21 @@
-import { useEffect, useRef, useState } from "react";
-import { ScrollView, Text, TouchableOpacity, Alert, View } from "react-native";
+import { useEffect, useState } from "react";
+import {
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { apiUrl } from "../../components/utils/utils";
 import ReusableInput from "../../components/ReuseAbleInput";
-import CheckboxDropdown from "../../components/CheckboxDropdown";
-import ImageUploadComponent from "../../components/ImageUploadComponent";
 import { useRouter } from "expo-router";
 
 const CreateVendorScreen = () => {
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState(null);
-  const imageUploaderRef = useRef();
   const router = useRouter();
 
   const {
@@ -36,23 +39,19 @@ const CreateVendorScreen = () => {
   const onSubmit = async (data) => {
     if (!userId) return Alert.alert("Error", "User not found");
 
-    const { image, imageId } =
-      await imageUploaderRef.current.uploadImageToServer();
-
     const payload = {
       ...data,
       userId,
-      image,
-      imageId,
-      fuelTypes: data.fuelTypes || [],
     };
-
+    console.log("payload=", payload);
     try {
       setLoading(true);
       await axios.post(`${apiUrl}/vendor/create`, payload);
       Alert.alert("Success", "Vendor registered successfully");
       router.push("/users/dashboard");
       reset();
+      setSelectedFuelTypes([]);
+      setFuelPrices({});
     } catch (error) {
       Alert.alert(
         "Error",
@@ -72,8 +71,7 @@ const CreateVendorScreen = () => {
 
   return (
     <ScrollView className="p-4">
-      <ImageUploadComponent ref={imageUploaderRef} />
-
+      {/* Basic Fields */}
       {[
         {
           name: "fullName",
@@ -94,6 +92,13 @@ const CreateVendorScreen = () => {
           icon: "map-marker",
           rules: { required: "Location is required" },
         },
+        {
+          name: "pms",
+          label: "PMS Price",
+          keyboardType: "numeric",
+          icon: "money",
+          rules: { required: "PMS Price is required" },
+        },
       ].map(({ name, label, icon, keyboardType, rules }) => (
         <Controller
           key={name}
@@ -112,23 +117,6 @@ const CreateVendorScreen = () => {
         />
       ))}
 
-      {/* Fuel Types */}
-      <Controller
-        control={control}
-        name="fuelTypes"
-        rules={{
-          validate: (v) => v?.length > 0 || "Select at least one fuel type",
-        }}
-        render={({ field: { onChange, value } }) => (
-          <CheckboxDropdown
-            label="Fuel Types Sold"
-            options={["PMS", "AGO", "DPK"]}
-            value={value || []}
-            onChange={onChange}
-          />
-        )}
-      />
-
       {/* Submit Button */}
       <TouchableOpacity
         className="bg-green-600 p-3 rounded-xl mt-4 mb-10"
@@ -139,6 +127,10 @@ const CreateVendorScreen = () => {
           {loading ? "Registering..." : "Register Vendor"}
         </Text>
       </TouchableOpacity>
+
+      {loading && (
+        <ActivityIndicator size="large" color="green" className="mt-4" />
+      )}
     </ScrollView>
   );
 };

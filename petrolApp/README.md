@@ -1,5 +1,4 @@
 npx expo start --clear
-
 eas build -p android --profile production
 eas build -p android --profile development
 eas build -p android --profile preview

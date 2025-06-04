@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -37,6 +34,7 @@ model User {
   stations          Station[]          @relation(name: "UserStations")
   Order             Order[]
   Review            Review[]
+  Vendor            Vendor[]
 }
 
 model PetrolPrice {
@@ -69,7 +67,18 @@ model Station {
   facilities        String[]
   ownerId           String?  @db.ObjectId
   owner             User?    @relation(fields: [ownerId], references: [id], onDelete: Cascade, name: "UserStations")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
 
+model Vendor {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  fullName  String
+  phone     String
+  location  String
+  pms       Int
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

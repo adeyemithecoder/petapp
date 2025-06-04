@@ -41,8 +41,15 @@ const StationList = ({
         </View>
         <View style={styles.info}>
           <Text style={styles.name}>
-            {item.name} {item.price ? `- ₦${item.price}` : ""}
+            {item.name}
+            {item.priceAndType && item.priceAndType.length > 0
+              ? " - " +
+                item.priceAndType
+                  .map((pt) => `${pt.type}: ₦${pt.price}`)
+                  .join(", ")
+              : ""}
           </Text>
+
           <Text style={styles.address}>{item.address}</Text>
         </View>
         <Text style={styles.distance}>{distance.toFixed(1)} km</Text>
