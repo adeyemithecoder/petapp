@@ -1,138 +1,133 @@
 import { useEffect, useState } from "react";
 import {
-  ScrollView,
+  View,
   Text,
-  TouchableOpacity,
-  Alert,
   ActivityIndicator,
+  TouchableOpacity,
+  ScrollView,
 } from "react-native";
-import { useForm, Controller } from "react-hook-form";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
-import { apiUrl } from "../../components/utils/utils";
-import ReusableInput from "../../components/ReuseAbleInput";
 import { useRouter } from "expo-router";
+import { getVendorByUser } from "../../components/utils/vendor"; // You should create this helper function
 
-const CreateVendorScreen = () => {
-  const [loading, setLoading] = useState(false);
-  const [userId, setUserId] = useState(null);
+const VendorHome = () => {
+  const [vendor, setVendor] = useState(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  const {
-    control,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm({ mode: "onTouched" });
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      const userData = await AsyncStorage.getItem("userDetails");
-      if (userData) {
-        const parsedUser = JSON.parse(userData);
-        setUserId(parsedUser.id);
-      }
-    };
-    fetchUser();
-  }, []);
-
-  const onSubmit = async (data) => {
-    if (!userId) return Alert.alert("Error", "User not found");
-
-    const payload = {
-      ...data,
-      userId,
-    };
-    console.log("payload=", payload);
+  const fetchVendor = async () => {
     try {
-      setLoading(true);
-      await axios.post(`${apiUrl}/vendor/create`, payload);
-      Alert.alert("Success", "Vendor registered successfully");
-      router.push("/users/dashboard");
-      reset();
-      setSelectedFuelTypes([]);
-      setFuelPrices({});
+      const data = await getVendorByUser(); // Similar to getStationByOwner
+      setVendor(data);
     } catch (error) {
-      Alert.alert(
-        "Error",
-        error?.response?.data?.message || "Failed to register vendor"
-      );
+      console.log("No vendor found or error fetching:", error.message);
+      setVendor(null);
     } finally {
       setLoading(false);
     }
   };
 
-  const onError = (formErrors) => {
-    const firstError = Object.values(formErrors)[0];
-    if (firstError?.message) {
-      Alert.alert("Validation Error", firstError.message);
-    }
-  };
+  useEffect(() => {
+    fetchVendor();
+  }, []);
+
+  if (loading) {
+    return (
+      <View className="flex-1 justify-center items-center bg-gray-100">
+        <ActivityIndicator size="large" color="#22c55e" />
+      </View>
+    );
+  }
+
+  if (!vendor) {
+    return (
+      <ScrollView className="flex-1 bg-white px-4 pt-10">
+        <Text className="text-base text-gray-400 mb-3">
+          PetrolApp &gt; Vendor Setup
+        </Text>
+
+        <View className="w-full max-w-md bg-gray-50 p-6 rounded-2xl shadow-lg">
+          <View className="mb-5">
+            <Text className="text-3xl font-extrabold text-gray-800 text-center">
+              Welcome, Fuel Vendor!
+            </Text>
+            <Text className="text-lg text-gray-600 mt-3">
+              Powering stations starts with you — let’s set up your profile and
+              grow your reach.
+            </Text>
+          </View>
+
+          <View className="mb-6">
+            <Text className="text-lg text-gray-700 mb-4">
+              Splantom PetrolApp connects vendors with fuel stations needing
+              reliable supply. Showcase your price, reliability, and location to
+              get discovered.
+            </Text>
+            <Text className="text-lg text-gray-700">
+              Please read our{" "}
+              <Text
+                className="text-green-600 underline"
+                onPress={() => router.push("/users-screen/vendor-terms")}
+              >
+                Vendor Terms
+              </Text>{" "}
+              before continuing.
+            </Text>
+          </View>
+
+          <TouchableOpacity
+            onPress={() => router.push("/users-screen/vendor-terms")}
+            className="bg-green-600 py-4 rounded-xl mb-10"
+          >
+            <Text className="text-white text-center font-bold text-lg">
+              Get Started
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    );
+  }
 
   return (
-    <ScrollView className="p-4">
-      {/* Basic Fields */}
-      {[
-        {
-          name: "fullName",
-          label: "Full Name",
-          icon: "user",
-          rules: { required: "Full name is required" },
-        },
-        {
-          name: "phone",
-          label: "Phone Number",
-          icon: "phone",
-          keyboardType: "phone-pad",
-          rules: { required: "Phone number is required" },
-        },
-        {
-          name: "location",
-          label: "Use a well descriptive address",
-          icon: "map-marker",
-          rules: { required: "Location is required" },
-        },
-        {
-          name: "pms",
-          label: "PMS Price",
-          keyboardType: "numeric",
-          icon: "money",
-          rules: { required: "PMS Price is required" },
-        },
-      ].map(({ name, label, icon, keyboardType, rules }) => (
-        <Controller
-          key={name}
-          control={control}
-          name={name}
-          rules={rules}
-          render={({ field: { onChange, value }, fieldState: { error } }) => (
-            <ReusableInput
-              icon={icon}
-              label={label}
-              value={value}
-              onChangeText={onChange}
-              keyboardType={keyboardType || "default"}
-            />
-          )}
-        />
-      ))}
+    <View className="flex-1 bg-gray-100 p-6">
+      <Text className="text-2xl font-bold text-gray-800 mb-4">
+        Welcome back!
+      </Text>
 
-      {/* Submit Button */}
-      <TouchableOpacity
-        className="bg-green-600 p-3 rounded-xl mt-4 mb-10"
-        onPress={handleSubmit(onSubmit, onError)}
-        disabled={loading}
-      >
-        <Text className="text-white text-center text-lg">
-          {loading ? "Registering..." : "Register Vendor"}
+      <View className="bg-white p-5 rounded-2xl shadow-md">
+        <Text className="text-xl font-semibold text-gray-800 mb-2">
+          {vendor.fullName}
         </Text>
-      </TouchableOpacity>
+        <Text className="text-sm text-gray-600 mb-1">
+          Phone: {vendor.phone || "N/A"}
+        </Text>
+        <Text className="text-sm text-gray-600 mb-1">
+          Location: {vendor.location || "N/A"}
+        </Text>
+        <Text className="text-sm text-gray-600">
+          PMS Price: ₦{vendor.pms?.toLocaleString() || "N/A"}
+        </Text>
+        <Text className="text-sm text-gray-600 mt-1">
+          Updated: {new Date(vendor.updatedAt).toLocaleDateString()}
+        </Text>
 
-      {loading && (
-        <ActivityIndicator size="large" color="green" className="mt-4" />
-      )}
-    </ScrollView>
+        <View className="mt-4 flex flex-col space-y-3">
+          <TouchableOpacity
+            className="bg-green-500 py-3 px-4 rounded-xl items-center mb-5"
+            onPress={() => router.push("/users-screen/vendor-orders")}
+          >
+            <Text className="text-white font-semibold">View Orders</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className="bg-yellow-400 py-3 px-4 rounded-xl items-center"
+            onPress={() => router.push("/users-screen/edit-vendor")}
+          >
+            <Text className="font-semibold">Edit Vendor Info</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
   );
 };
 
-export default CreateVendorScreen;
+export default VendorHome;

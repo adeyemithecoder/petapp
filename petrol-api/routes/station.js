@@ -385,6 +385,17 @@ stationRouter.delete(
   })
 );
 
+// Get Stations By Owner ID
+stationRouter.get(
+  "/vendor-by-owner/:userId",
+  expressAsyncHandler(async (req, res) => {
+    const { userId } = req.params;
+    const vendor = await prisma.vendor.findFirst({
+      where: { userId },
+    });
+    res.json(vendor);
+  })
+);
 // Get vendor By Id
 stationRouter.get(
   "/vendor/:id",
