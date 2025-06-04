@@ -102,3 +102,22 @@ export const getVendorByUser = async () => {
     throw error;
   }
 };
+export const getVendors = async () => {
+  try {
+    const { data } = await axios.get(`${apiUrl}/station/vendor`);
+    return data;
+  } catch (error) {
+    console.error("Error fetch station:", error.message);
+    throw error;
+  }
+};
+
+export const getVendorById = async (id) => {
+  try {
+    const { data } = await axios.get(`${apiUrl}/station/vendor/${id}`);
+    return data;
+  } catch (error) {
+    console.error("Error fetch station:", error.message);
+    throw error;
+  }
+};

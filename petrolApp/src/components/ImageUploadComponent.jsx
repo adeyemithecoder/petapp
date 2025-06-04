@@ -4,14 +4,7 @@ import React, {
   forwardRef,
   useEffect,
 } from "react";
-import {
-  View,
-  Image,
-  TouchableOpacity,
-  Text,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import { View, Image, TouchableOpacity, Text, Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as FileSystem from "expo-file-system";
@@ -22,7 +15,7 @@ import { apiUrl } from "./utils/utils";
 const ImageUploadComponent = forwardRef((props, ref) => {
   const [imagePreview, setImagePreview] = useState(null);
   const [base64Image, setBase64Image] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [hasNewImage, setHasNewImage] = useState(false);
 
   // Load initial image
   useEffect(() => {
@@ -50,7 +43,9 @@ const ImageUploadComponent = forwardRef((props, ref) => {
       setImagePreview(null);
       setBase64Image(null);
       setImageId(null);
+      setHasNewImage(false);
     },
+    hasNewImage: () => hasNewImage,
   }));
 
   const [imageId, setImageId] = useState(null);
@@ -98,7 +93,8 @@ const ImageUploadComponent = forwardRef((props, ref) => {
 
     setImagePreview(imageData);
     setBase64Image(imageData);
-    setImageId(null); // Reset in case of new image
+    setImageId(null);
+    setHasNewImage(true); // Mark new image selected
   };
 
   const uploadImageToServer = async () => {
@@ -106,10 +102,7 @@ const ImageUploadComponent = forwardRef((props, ref) => {
       Alert.alert("No Image", "Please select an image first.");
       return null;
     }
-
-    setLoading(true);
     try {
-      console.log("base64Image=", base64Image);
       const { data } = await axios.post(`${apiUrl}/image/upload`, {
         image: base64Image,
       });
@@ -123,28 +116,21 @@ const ImageUploadComponent = forwardRef((props, ref) => {
         props.onUpload(uploadedData);
       }
 
-      // Alert.alert("Success", "Image uploaded successfully.");
-
-      // Clear image
       setImagePreview(null);
       setBase64Image(null);
       setImageId(null);
-
+      setHasNewImage(false); // Reset flag
       return uploadedData;
     } catch (error) {
       console.error("Upload failed", error);
       Alert.alert("Error", "Image upload failed.");
       return null;
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
     <View className="flex-1 justify-center items-center mb-10">
-      {loading ? (
-        <ActivityIndicator size="large" color="orange" />
-      ) : imagePreview ? (
+      {imagePreview ? (
         <View className="relative my-5">
           <Image
             source={{ uri: imagePreview }}

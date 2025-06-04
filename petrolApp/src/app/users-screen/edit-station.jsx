@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ScrollView,
   Text,
@@ -14,15 +14,18 @@ import { apiUrl } from "../../components/utils/utils";
 import ReusableInput from "../../components/ReuseAbleInput";
 import CheckboxDropdown from "../../components/CheckboxDropdown";
 import { Switch } from "react-native-paper";
-import { useRoute } from "@react-navigation/native";
 import { getStationByOwner } from "../../components/utils/station";
+import ImageUploadComponent from "../../components/ImageUploadComponent";
+import { useRouter } from "expo-router";
 
 const EditStationScreen = () => {
-  const route = useRoute();
   const [isFetchingStation, setIsFetchingStation] = useState(false);
   const [loading, setLoading] = useState(false);
   const [stationId, setStationId] = useState(null);
-
+  const imageUploaderRef = useRef();
+  const [stationImage, setStationImage] = useState(null);
+  const [stationImageId, setStationImageId] = useState(null);
+  const router = useRouter();
   const {
     control,
     handleSubmit,
@@ -36,6 +39,8 @@ const EditStationScreen = () => {
         setIsFetchingStation(true);
         const data = await getStationByOwner();
         setStationId(data.id);
+        setStationImage(data.image || null);
+        setStationImageId(data.imageId || null);
         reset({
           name: data.name,
           pms: String(data.pms),
@@ -62,7 +67,14 @@ const EditStationScreen = () => {
     const userData = await AsyncStorage.getItem("userDetails");
     const { id } = JSON.parse(userData);
     if (!id) return Alert.alert("Error", "Owner not found");
+    let image = stationImage;
+    let imageId = stationImageId;
 
+    if (imageUploaderRef.current?.uploadImageToServer) {
+      const result = await imageUploaderRef.current.uploadImageToServer();
+      image = result.image;
+      imageId = result.imageId;
+    }
     const payload = {
       ...data,
       pms: data.pms ? Number(data.pms) : null,
@@ -70,11 +82,14 @@ const EditStationScreen = () => {
       availableProducts: data.availableProducts || [],
       paymentMethods: data.paymentMethods || [],
       facilities: data.facilities || [],
+      image,
+      imageId,
     };
 
     try {
       setLoading(true);
       await axios.put(`${apiUrl}/station/${stationId}`, payload);
+      router.back();
       Alert.alert("Success", "Station updated successfully");
 
       reset();
@@ -106,6 +121,11 @@ const EditStationScreen = () => {
 
   return (
     <ScrollView className="p-4">
+      <ImageUploadComponent
+        ref={imageUploaderRef}
+        initialImage={stationImage}
+        initialImageId={stationImageId}
+      />
       {[
         {
           name: "name",

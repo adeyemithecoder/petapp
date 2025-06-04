@@ -48,29 +48,29 @@ const VendorHome = () => {
         <View className="w-full max-w-md bg-gray-50 p-6 rounded-2xl shadow-lg">
           <View className="mb-5">
             <Text className="text-3xl font-extrabold text-gray-800 text-center">
-              Welcome, Fuel Vendor!
+              Welcome, Independent Fuel Seller!
             </Text>
-            <Text className="text-lg text-gray-600 mt-3">
-              Powering stations starts with you — let’s set up your profile and
-              grow your reach.
+            <Text className="text-lg text-gray-600 mt-3 text-center">
+              Whether you sell fuel from a mobile tank, roadside kiosk, or mini
+              outlet — PetrolApp gives you the tools to reach more customers and
+              grow your business.
             </Text>
           </View>
 
           <View className="mb-6">
             <Text className="text-lg text-gray-700 mb-4">
-              Splantom PetrolApp connects vendors with fuel stations needing
-              reliable supply. Showcase your price, reliability, and location to
-              get discovered.
+              We’re here to help you showcase your fuel availability, prices,
+              and location so nearby buyers can find and trust you easily.
             </Text>
             <Text className="text-lg text-gray-700">
-              Please read our{" "}
+              Before you continue, please review our{" "}
               <Text
                 className="text-green-600 underline"
                 onPress={() => router.push("/users-screen/vendor-terms")}
               >
                 Vendor Terms
               </Text>{" "}
-              before continuing.
+              to understand how the platform works.
             </Text>
           </View>
 
@@ -111,13 +111,6 @@ const VendorHome = () => {
         </Text>
 
         <View className="mt-4 flex flex-col space-y-3">
-          <TouchableOpacity
-            className="bg-green-500 py-3 px-4 rounded-xl items-center mb-5"
-            onPress={() => router.push("/users-screen/vendor-orders")}
-          >
-            <Text className="text-white font-semibold">View Orders</Text>
-          </TouchableOpacity>
-
           <TouchableOpacity
             className="bg-yellow-400 py-3 px-4 rounded-xl items-center"
             onPress={() => router.push("/users-screen/edit-vendor")}

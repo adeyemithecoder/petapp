@@ -67,7 +67,7 @@ const UserDetails = () => {
       await updateUser(updatedUser);
 
       Alert.alert("Success", "User details updated successfully!");
-      router.push("/users/dashboard");
+      router.back();
     } catch (error) {
       Alert.alert("Error", error.message || "Failed to update user details.");
     } finally {

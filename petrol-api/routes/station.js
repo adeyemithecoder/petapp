@@ -323,7 +323,6 @@ stationRouter.put(
       return res.status(404).json({ message: "Vendor not found" });
     }
     try {
-      // Optional: Convert numeric fields (e.g. "pms") from string to number
       if (updateData.pms) {
         updateData.pms = Number(updateData.pms);
       }

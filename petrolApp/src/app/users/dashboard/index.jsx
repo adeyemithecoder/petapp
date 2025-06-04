@@ -54,8 +54,8 @@ const Menu = () => {
     },
     {
       label: "Vendor",
-      icon: "user-tag",
-      onPress: () => router.push("/users-screen/vendor"),
+      icon: "store-alt",
+      onPress: () => router.push("/users-screen/vendor-list"),
     },
   ];
 
